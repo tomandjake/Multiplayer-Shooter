@@ -10,6 +10,7 @@ class USphereComponent;
 class UWidgetComponent;
 class UAnimationAsset;
 class ABulletCasing;
+class UTexture2D;
 
 UENUM(BlueprintType)
 enum class EWeaponState : uint8
@@ -39,6 +40,20 @@ public:
 	void ShowPickupWidget(bool bShowWidget);
 
 	virtual void Fire(const FVector& HitTarget);
+
+	UPROPERTY(EditAnywhere, Category = "Crosshair")
+		UTexture2D* CrosshairCenter;
+
+	UPROPERTY(EditAnywhere, Category = "Crosshair")
+		UTexture2D* CrosshairLeft;
+
+	UPROPERTY(EditAnywhere, Category = "Crosshair")
+		UTexture2D* CrosshairRight;
+
+	UPROPERTY(EditAnywhere, Category = "Crosshair")
+		UTexture2D* CrosshairTop;
+	UPROPERTY(EditAnywhere, Category = "Crosshair")
+		UTexture2D* CrosshairBottom;
 	
 protected:
 	
@@ -76,7 +91,6 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<ABulletCasing> BulletCasingClass;
-	
 public:	
 	
 	void SetWeaponState(EWeaponState State);
