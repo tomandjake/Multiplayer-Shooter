@@ -17,9 +17,11 @@ UCombatComponent::UCombatComponent()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
-	PrimaryComponentTick.bCanEverTick = false;
+	PrimaryComponentTick.bCanEverTick = true;
 	BaseWalkSpeed = 600.0f;
 	AimWalkSpeed = 450.0f;
+
+
 }
 
 void UCombatComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -39,6 +41,11 @@ void UCombatComponent::BeginPlay()
 	{
 		Character->GetCharacterMovement()->MaxWalkSpeed = BaseWalkSpeed;
 	}
+	if (HUD)
+	{
+		HUD->DrawHUD();
+	}
+
 }
 
 void UCombatComponent::SetAiming(bool bIsAiming)
@@ -115,29 +122,38 @@ void UCombatComponent::SetHUDCrosshairs(float DeltaTime)
 	if (Controller)
 	{
 		HUD = HUD == nullptr ? Cast<ABlasterHUD>(Controller->GetHUD()) : HUD;
+		FHUDPackage HUDPackage;
 		if (HUD)
 		{
 			if (EquippedWeapon)
 			{
-				FHUDPackage HUDPackage;
 				HUDPackage.CrosshairCenter = EquippedWeapon->CrosshairCenter;
 				HUDPackage.CrosshairLeft = EquippedWeapon->CrosshairLeft;
 				HUDPackage.CrosshairRight = EquippedWeapon->CrosshairRight;
 				HUDPackage.CrosshairTop = EquippedWeapon->CrosshairTop;
-				HUDPackage.CrosshairButton = EquippedWeapon->CrosshairBottom;
+				HUDPackage.CrosshairBottom = EquippedWeapon->CrosshairBottom;
 				HUD->SetHUDPackage(HUDPackage);
 			}
 			else
 			{
-				FHUDPackage HUDPackage;
 				HUDPackage.CrosshairCenter = nullptr;
 				HUDPackage.CrosshairLeft = nullptr;
 				HUDPackage.CrosshairRight = nullptr;
 				HUDPackage.CrosshairTop = nullptr;
-				HUDPackage.CrosshairButton = nullptr;
+				HUDPackage.CrosshairBottom = nullptr;
 				HUD->SetHUDPackage(HUDPackage);
 			}
 		}
+		// [0, 600] -> [0, 1]
+		FVector2D WalkSpeedRange(0.f, Character->GetCharacterMovement()->MaxWalkSpeed);
+		FVector2D VelocityMultiplierRange(0.f, 1.f);
+		FVector Velocity = Character->GetVelocity();
+		Velocity.Z = 0.f;
+
+		CrosshairVelocityFactor = FMath::GetMappedRangeValueClamped(WalkSpeedRange, VelocityMultiplierRange, Velocity.Size());
+		HUDPackage.CrosshairSpread = CrosshairVelocityFactor;
+		HUDPackage.CrosshairColor = FLinearColor::White;
+		HUD->SetHUDPackage(HUDPackage);
 	}
 }
 
